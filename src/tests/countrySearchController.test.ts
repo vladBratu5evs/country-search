@@ -69,4 +69,77 @@ describe("createCountrySearchController", () => {
       "Canada",
     ]);
   });
+
+  it("clears results and skips fetch for an empty query", async () => {
+    const fetchMock = vi.fn<typeof fetch>();
+    vi.stubGlobal("fetch", fetchMock);
+    const controller = createCountrySearchController(() => {});
+
+    await controller.search("   ");
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(controller.getState()).toMatchObject({
+      status: "idle",
+      query: "",
+      countries: [],
+      error: null,
+    });
+  });
+
+  it("treats a 404 response as an empty result state", async () => {
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(new Response(null, { status: 404 }));
+    vi.stubGlobal("fetch", fetchMock);
+    const controller = createCountrySearchController(() => {});
+
+    await controller.search("unknown");
+
+    expect(controller.getState()).toMatchObject({
+      status: "empty",
+      query: "unknown",
+      countries: [],
+      error: null,
+    });
+  });
+
+  it("retries the same query after an HTTP error", async () => {
+    const countries = [
+      {
+        name: { common: "Canada", official: "Canada" },
+        flags: { svg: "canada.svg" },
+        region: "Americas",
+        population: 38929902,
+      },
+    ];
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(new Response(null, { status: 429 }))
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(countries), {
+          headers: { "Content-Type": "application/json" },
+        }),
+      );
+    vi.stubGlobal("fetch", fetchMock);
+    const controller = createCountrySearchController(() => {});
+
+    await controller.search("canada");
+    expect(controller.getState()).toMatchObject({
+      status: "error",
+      query: "canada",
+      error: "http",
+    });
+
+    await controller.retry();
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      expect.stringContaining("canada"),
+      expect.objectContaining({ signal: expect.any(AbortSignal) }),
+    );
+    expect(controller.getState().countries.map(({ name }) => name)).toEqual([
+      "Canada",
+    ]);
+  });
 });
