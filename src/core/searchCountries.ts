@@ -1,3 +1,5 @@
+import { HttpError } from "./searchErrors.js";
+
 export async function searchCountries(
   query: string,
   signal: AbortSignal,
@@ -12,9 +14,7 @@ export async function searchCountries(
   }
 
   if (!response.ok) {
-    throw new Error(
-      `Country search failed: ${response.status} ${response.statusText}`,
-    );
+    throw new HttpError(response.status, response.statusText);
   }
 
   const countries: unknown = await response.json();
