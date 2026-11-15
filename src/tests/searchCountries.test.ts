@@ -48,7 +48,10 @@ describe("searchCountries", () => {
 
       await expect(
         searchCountries("canada", new AbortController().signal),
-      ).rejects.toThrow();
+      ).rejects.toMatchObject({
+        name: "HttpError",
+        status,
+      });
     },
   );
 });
