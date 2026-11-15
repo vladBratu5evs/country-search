@@ -11,15 +11,21 @@ describe("mapCountryResponse", () => {
       population: 38929902,
       languages: { eng: "English", fra: "French" },
       area: 9984670,
+      borders: ["USA"],
+      currencies: { CAD: { name: "Canadian dollar", symbol: "$" } },
     });
 
     expect(mapCountryResponse(raw)).toEqual({
       name: "Canada",
+      description: "Canada",
       flag: "canada.svg",
       capital: "Ottawa",
       region: "Americas",
       population: 38929902,
       languages: ["English", "French"],
+      area: 9984670,
+      borders: ["USA"],
+      currency: "Canadian dollar (CAD, $)",
     });
   });
 
@@ -33,11 +39,15 @@ describe("mapCountryResponse", () => {
 
     expect(mapCountryResponse(raw)).toEqual({
       name: "Nauru",
+      description: "Republic of Nauru",
       flag: "nauru.svg",
       capital: "",
       region: "Oceania",
       population: 10834,
       languages: [],
+      area: null,
+      borders: [],
+      currency: "",
     });
   });
 });
