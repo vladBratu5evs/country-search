@@ -1,4 +1,4 @@
-type CountryCardData = {
+export type CountryCardData = {
   name: string;
   description: string;
   flag: string;
