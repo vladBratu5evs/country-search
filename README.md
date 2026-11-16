@@ -13,3 +13,8 @@ it runs `npm test`; an empty test suite is allowed while tests are being added.
 Build the TypeScript modules with `npm run build`, then serve the project root
 over HTTP (for example, `python -m http.server 8000`) and open
 `http://localhost:8000`. The page loads the compiled module from `dist/`.
+
+## Deployment
+
+The app is deployed to [GitHub Pages](https://vladBratu5evs.github.io/country-search/)
+by the `Deploy to GitHub Pages` workflow.
