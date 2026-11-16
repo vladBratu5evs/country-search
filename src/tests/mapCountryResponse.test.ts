@@ -3,22 +3,25 @@ import { mapCountryResponse } from "../core/mapCountryResponse.js";
 
 describe("mapCountryResponse", () => {
   it("maps country API data to card fields", () => {
-    const raw = JSON.stringify({
-      name: { common: "Canada", official: "Canada" },
-      flags: { svg: "canada.svg" },
-      capital: ["Ottawa", "Toronto"],
+    const raw = {
+      name: "Canada",
+      flag: "https://countries.dev/flags/ca.svg",
+      capital: "Ottawa",
       region: "Americas",
       population: 38929902,
-      languages: { eng: "English", fra: "French" },
+      languages: [
+        { iso639_1: "en", name: "English" },
+        { iso639_1: "fr", name: "French" },
+      ],
       area: 9984670,
       borders: ["USA"],
-      currencies: { CAD: { name: "Canadian dollar", symbol: "$" } },
-    });
+      currencies: [{ code: "CAD", name: "Canadian dollar", symbol: "$" }],
+    };
 
     expect(mapCountryResponse(raw)).toEqual({
       name: "Canada",
       description: "Canada",
-      flag: "canada.svg",
+      flag: "https://countries.dev/flags/ca.svg",
       capital: "Ottawa",
       region: "Americas",
       population: 38929902,
@@ -30,17 +33,17 @@ describe("mapCountryResponse", () => {
   });
 
   it("uses empty values when capital and languages are missing", () => {
-    const raw = JSON.stringify({
-      name: { common: "Nauru", official: "Republic of Nauru" },
-      flags: { svg: "nauru.svg" },
+    const raw = {
+      name: "Nauru",
+      flag: "https://countries.dev/flags/nr.svg",
       region: "Oceania",
       population: 10834,
-    });
+    };
 
     expect(mapCountryResponse(raw)).toEqual({
       name: "Nauru",
-      description: "Republic of Nauru",
-      flag: "nauru.svg",
+      description: "Nauru",
+      flag: "https://countries.dev/flags/nr.svg",
       capital: "",
       region: "Oceania",
       population: 10834,

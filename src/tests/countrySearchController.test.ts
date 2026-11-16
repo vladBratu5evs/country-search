@@ -6,6 +6,45 @@ describe("createCountrySearchController", () => {
     vi.unstubAllGlobals();
   });
 
+  it("aborts an active request immediately when the input changes", async () => {
+    let activeSignal: AbortSignal | undefined;
+    const fetchMock = vi.fn<typeof fetch>((_input, init) => {
+      const signal = init?.signal;
+      if (!signal) {
+        throw new Error("Expected fetch to receive an AbortSignal.");
+      }
+      activeSignal = signal;
+      return new Promise<Response>((_resolve, reject) => {
+        signal.addEventListener(
+          "abort",
+          () => {
+            reject(
+              Object.assign(new Error("Request cancelled"), {
+                name: "AbortError",
+              }),
+            );
+          },
+          { once: true },
+        );
+      });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    const controller = createCountrySearchController(() => {});
+
+    const activeSearch = controller.search("can");
+    controller.inputChanged("canad");
+
+    expect(activeSignal?.aborted).toBe(true);
+    expect(controller.getState()).toMatchObject({
+      status: "idle",
+      query: "canad",
+      countries: [],
+      error: null,
+    });
+    await activeSearch;
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
   it("aborts an earlier fetch and ignores its late response", async () => {
     const pending = new Map<string, (response: Response) => void>();
     const signals = new Map<string, AbortSignal>();
@@ -59,8 +98,9 @@ describe("createCountrySearchController", () => {
       new Response(
         JSON.stringify([
           {
-            name: { common: name, official: name },
-            flags: { svg: `${name}.svg` },
+            name,
+            flag: `https://countries.dev/flags/${name}.svg`,
+            capital: "",
             region: "Americas",
             population: 1,
           },
@@ -142,8 +182,9 @@ describe("createCountrySearchController", () => {
       new Response(
         JSON.stringify([
           {
-            name: { common: name, official: name },
-            flags: { svg: `${name}.svg` },
+            name,
+            flag: `https://countries.dev/flags/${name}.svg`,
+            capital: "",
             region: "Americas",
             population: 1,
           },
@@ -210,8 +251,9 @@ describe("createCountrySearchController", () => {
   it("retries the same query after an HTTP error", async () => {
     const countries = [
       {
-        name: { common: "Canada", official: "Canada" },
-        flags: { svg: "canada.svg" },
+        name: "Canada",
+        flag: "https://countries.dev/flags/ca.svg",
+        capital: "Ottawa",
         region: "Americas",
         population: 38929902,
       },

@@ -7,9 +7,9 @@ describe("searchCountries", () => {
   });
 
   it("fetches the query with the provided abort signal and returns the countries", async () => {
-    const query = "canada";
+    const query = "côte d'ivoire";
     const signal = new AbortController().signal;
-    const countries = [{ name: { common: "Canada" } }];
+    const countries = [{ name: "Canada" }];
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
       new Response(JSON.stringify(countries), {
         headers: { "Content-Type": "application/json" },
@@ -19,7 +19,7 @@ describe("searchCountries", () => {
 
     await expect(searchCountries(query, signal)).resolves.toEqual(countries);
     expect(fetchMock).toHaveBeenCalledWith(
-      expect.stringContaining(query),
+      `https://countries.dev/name/${encodeURIComponent(query)}`,
       expect.objectContaining({ signal }),
     );
   });
