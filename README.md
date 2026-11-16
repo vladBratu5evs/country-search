@@ -17,4 +17,5 @@ over HTTP (for example, `python -m http.server 8000`) and open
 ## Deployment
 
 The app is deployed to [GitHub Pages](https://vladBratu5evs.github.io/country-search/)
-by the `Deploy to GitHub Pages` workflow.
+by the `Deploy to GitHub Pages` workflow. The repository's `github-pages`
+environment must allow the `country-search` branch to deploy.
