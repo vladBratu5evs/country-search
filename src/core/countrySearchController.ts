@@ -67,13 +67,7 @@ export function createCountrySearchController(
     let nextState: CountrySearchState;
     try {
       const rawCountries = await searchCountries(normalizedQuery, signal);
-      const countries = rawCountries.map((raw) => {
-        const serialized = JSON.stringify(raw);
-        if (serialized === undefined) {
-          throw new Error("Country response could not be serialized.");
-        }
-        return mapCountryResponse(serialized);
-      });
+      const countries = rawCountries.map(mapCountryResponse);
 
       nextState = {
         status: countries.length === 0 ? "empty" : "results",
@@ -112,8 +106,24 @@ export function createCountrySearchController(
     publish(nextState);
   };
 
+  const inputChanged = (query: string): void => {
+    const normalizedQuery = query.trim();
+    latestRequestId += 1;
+    lastQuery = normalizedQuery;
+    activeRequest?.abort();
+    activeRequest = undefined;
+
+    publish({
+      status: "idle",
+      query: normalizedQuery,
+      countries: [],
+      error: null,
+    });
+  };
+
   return {
     search,
+    inputChanged,
     retry: () => (lastQuery ? search(lastQuery) : Promise.resolve()),
     getState: () => state,
     dispose: () => {

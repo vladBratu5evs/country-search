@@ -5,7 +5,7 @@ export async function searchCountries(
   signal: AbortSignal,
 ): Promise<unknown[]> {
   const response = await fetch(
-    `https://restcountries.com/v3.1/name/${encodeURIComponent(query)}`,
+    `https://countries.dev/name/${encodeURIComponent(query)}`,
     { signal },
   );
 

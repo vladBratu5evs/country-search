@@ -15,23 +15,16 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-export function mapCountryResponse(raw: string): CountryCardData {
-  const parsed: unknown = JSON.parse(raw);
-  if (!isRecord(parsed)) {
+export function mapCountryResponse(raw: unknown): CountryCardData {
+  if (!isRecord(raw)) {
     throw new Error("Expected the country response to be an object.");
   }
 
-  const countryName = isRecord(parsed.name) ? parsed.name : undefined;
-  const name = countryName?.common;
-  const description =
-    typeof countryName?.official === "string" ? countryName.official : name;
-  const flag = isRecord(parsed.flags) ? parsed.flags.svg : undefined;
-  const { capital, region, population, languages, area, borders, currencies } =
-    parsed;
+  const { name, flag, capital, region, population, languages, area, borders } =
+    raw;
 
   if (
     typeof name !== "string" ||
-    typeof description !== "string" ||
     typeof flag !== "string" ||
     typeof region !== "string" ||
     typeof population !== "number"
@@ -39,33 +32,36 @@ export function mapCountryResponse(raw: string): CountryCardData {
     throw new Error("Country response is missing required card data.");
   }
 
-  const currency = isRecord(currencies)
-    ? Object.entries(currencies)
-        .flatMap(([code, value]) => {
-          if (!isRecord(value) || typeof value.name !== "string") {
+  const currency = Array.isArray(raw.currencies)
+    ? raw.currencies
+        .flatMap((value) => {
+          if (
+            !isRecord(value) ||
+            typeof value.code !== "string" ||
+            typeof value.name !== "string"
+          ) {
             return [];
           }
 
           const symbol =
             typeof value.symbol === "string" ? `, ${value.symbol}` : "";
-          return [`${value.name} (${code}${symbol})`];
+          return [`${value.name} (${value.code}${symbol})`];
         })
         .join(", ")
     : "";
 
   return {
     name,
-    description,
+    description: name,
     flag,
-    capital:
-      Array.isArray(capital) && typeof capital[0] === "string"
-        ? capital[0]
-        : "",
+    capital: typeof capital === "string" ? capital : "",
     region,
     population,
-    languages: isRecord(languages)
-      ? Object.values(languages).filter(
-          (language): language is string => typeof language === "string",
+    languages: Array.isArray(languages)
+      ? languages.flatMap((language) =>
+          isRecord(language) && typeof language.name === "string"
+            ? [language.name]
+            : [],
         )
       : [],
     area: typeof area === "number" ? area : null,
