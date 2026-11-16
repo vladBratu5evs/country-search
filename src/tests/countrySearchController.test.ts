@@ -6,9 +6,11 @@ describe("createCountrySearchController", () => {
     vi.unstubAllGlobals();
   });
 
-  it("keeps the latest results when an earlier request resolves afterward", async () => {
+  it("aborts an earlier fetch and ignores its late response", async () => {
     const pending = new Map<string, (response: Response) => void>();
     const signals = new Map<string, AbortSignal>();
+    const fetchEvents: string[] = [];
+    const abortErrors: Error[] = [];
     const fetchMock = vi.fn<typeof fetch>((input, init) => {
       const query = decodeURIComponent(
         new URL(String(input)).pathname.split("/").at(-1) ?? "",
@@ -23,11 +25,12 @@ describe("createCountrySearchController", () => {
 
       return new Promise<Response>((resolve, reject) => {
         const rejectAsAborted = () => {
-          reject(
-            Object.assign(new Error("Request cancelled"), {
-              name: "AbortError",
-            }),
-          );
+          const error = Object.assign(new Error("Request cancelled"), {
+            name: "AbortError",
+          });
+          abortErrors.push(error);
+          fetchEvents.push(`abort:${query}`);
+          reject(error);
         };
 
         if (signal.aborted) {
@@ -36,7 +39,14 @@ describe("createCountrySearchController", () => {
         }
 
         signal.addEventListener("abort", rejectAsAborted, { once: true });
-        pending.set(query, resolve);
+        pending.set(query, (response) => {
+          if (signal.aborted) {
+            fetchEvents.push(`late-response:${query}`);
+            return;
+          }
+          fetchEvents.push(`resolve:${query}`);
+          resolve(response);
+        });
       });
     });
     vi.stubGlobal("fetch", fetchMock);
@@ -64,7 +74,14 @@ describe("createCountrySearchController", () => {
     pending.get("can")?.(makeResponse("Canary Islands"));
     await earlierRequest;
 
+    expect(abortErrors).toHaveLength(1);
+    expect(abortErrors[0]).toMatchObject({ name: "AbortError" });
     expect(signals.get("can")?.aborted).toBe(true);
+    expect(fetchEvents).toEqual([
+      "abort:can",
+      "resolve:canada",
+      "late-response:can",
+    ]);
     expect(controller.getState().countries.map(({ name }) => name)).toEqual([
       "Canada",
     ]);
