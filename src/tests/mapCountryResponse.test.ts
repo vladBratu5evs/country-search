@@ -5,7 +5,11 @@ describe("mapCountryResponse", () => {
   it("maps country API data to card fields", () => {
     const raw = {
       name: "Canada",
-      flag: "https://countries.dev/flags/ca.svg",
+      flag: "🇨🇦",
+      flags: {
+        png: "https://flagcdn.com/w320/ca.png",
+        svg: "https://flagcdn.com/ca.svg",
+      },
       capital: "Ottawa",
       region: "Americas",
       population: 38929902,
@@ -21,7 +25,7 @@ describe("mapCountryResponse", () => {
     expect(mapCountryResponse(raw)).toEqual({
       name: "Canada",
       description: "Canada",
-      flag: "https://countries.dev/flags/ca.svg",
+      flag: "https://flagcdn.com/ca.svg",
       capital: "Ottawa",
       region: "Americas",
       population: 38929902,
@@ -35,7 +39,10 @@ describe("mapCountryResponse", () => {
   it("uses empty values when capital and languages are missing", () => {
     const raw = {
       name: "Nauru",
-      flag: "https://countries.dev/flags/nr.svg",
+      flag: "🇳🇷",
+      flags: {
+        png: "https://flagcdn.com/w320/nr.png",
+      },
       region: "Oceania",
       population: 10834,
     };
@@ -43,7 +50,7 @@ describe("mapCountryResponse", () => {
     expect(mapCountryResponse(raw)).toEqual({
       name: "Nauru",
       description: "Nauru",
-      flag: "https://countries.dev/flags/nr.svg",
+      flag: "https://flagcdn.com/w320/nr.png",
       capital: "",
       region: "Oceania",
       population: 10834,
