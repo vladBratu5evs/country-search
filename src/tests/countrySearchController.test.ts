@@ -99,7 +99,8 @@ describe("createCountrySearchController", () => {
         JSON.stringify([
           {
             name,
-            flag: `https://countries.dev/flags/${name}.svg`,
+            flag: "🇨🇦",
+            flags: { svg: `https://flagcdn.com/${name}.svg` },
             capital: "",
             region: "Americas",
             population: 1,
@@ -183,7 +184,8 @@ describe("createCountrySearchController", () => {
         JSON.stringify([
           {
             name,
-            flag: `https://countries.dev/flags/${name}.svg`,
+            flag: "🇨🇦",
+            flags: { svg: `https://flagcdn.com/${name}.svg` },
             capital: "",
             region: "Americas",
             population: 1,
@@ -252,7 +254,8 @@ describe("createCountrySearchController", () => {
     const countries = [
       {
         name: "Canada",
-        flag: "https://countries.dev/flags/ca.svg",
+        flag: "🇨🇦",
+        flags: { svg: "https://flagcdn.com/ca.svg" },
         capital: "Ottawa",
         region: "Americas",
         population: 38929902,

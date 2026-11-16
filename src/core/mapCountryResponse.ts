@@ -20,8 +20,14 @@ export function mapCountryResponse(raw: unknown): CountryCardData {
     throw new Error("Expected the country response to be an object.");
   }
 
-  const { name, flag, capital, region, population, languages, area, borders } =
-    raw;
+  const { name, capital, region, population, languages, area, borders } = raw;
+  const flags = isRecord(raw.flags) ? raw.flags : undefined;
+  const flag =
+    typeof flags?.svg === "string"
+      ? flags.svg
+      : typeof flags?.png === "string"
+        ? flags.png
+        : undefined;
 
   if (
     typeof name !== "string" ||
