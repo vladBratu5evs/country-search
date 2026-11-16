@@ -1,0 +1,41 @@
+{
+  "name": "country-search",
+  "version": "1.0.0",
+  "description": "Country search task for RSSchool",
+  "homepage": "https://github.com/vladBratu5evs/country-search#readme",
+  "bugs": {
+    "url": "https://github.com/vladBratu5evs/country-search/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vladBratu5evs/country-search.git"
+  },
+  "license": "ISC",
+  "author": "Vladislavs Bratusevs",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "test": "vitest run src --passWithNoTests",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{js,mjs,cjs,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,jsonc,md,css,html,yml,yaml}": "prettier --write"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.15.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.0",
+    "prettier": "^3.10.1",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.72.2",
+    "vitest": "^5.1.0"
+  }
+}
