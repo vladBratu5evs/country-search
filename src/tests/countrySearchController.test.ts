@@ -4,6 +4,7 @@ import { createCountrySearchController } from "../core/countrySearchController.j
 describe("createCountrySearchController", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
 
   it("aborts an active request immediately when the input changes", async () => {
@@ -128,7 +129,7 @@ describe("createCountrySearchController", () => {
     ]);
   });
 
-  it("shows only the last result when fetch responses resolve in reverse order", async () => {
+  it("aborts the earlier fetch before its late response can replace the latest result", async () => {
     const pending = new Map<
       string,
       { signal: AbortSignal; resolve: (response: Response) => void }
@@ -247,6 +248,41 @@ describe("createCountrySearchController", () => {
       query: "unknown",
       countries: [],
       error: null,
+    });
+  });
+
+  it("reports a timed out request as a timeout error", async () => {
+    const timeoutController = new AbortController();
+    const timeoutSpy = vi
+      .spyOn(AbortSignal, "timeout")
+      .mockReturnValue(timeoutController.signal);
+    const fetchMock = vi.fn<typeof fetch>((_input, init) => {
+      const signal = init?.signal;
+      if (!signal) {
+        throw new Error("Expected fetch to receive an AbortSignal.");
+      }
+
+      return new Promise<Response>((_resolve, reject) => {
+        signal.addEventListener("abort", () => reject(signal.reason), {
+          once: true,
+        });
+      });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    const controller = createCountrySearchController(() => {});
+
+    const request = controller.search("canada");
+    timeoutController.abort(
+      new DOMException("The request timed out.", "TimeoutError"),
+    );
+    await request;
+
+    expect(timeoutSpy).toHaveBeenCalledOnce();
+    expect(controller.getState()).toMatchObject({
+      status: "error",
+      query: "canada",
+      countries: [],
+      error: "timeout",
     });
   });
 

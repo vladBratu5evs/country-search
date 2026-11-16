@@ -38,7 +38,7 @@ describe("searchCountries", () => {
     ).resolves.toEqual([]);
   });
 
-  it.each([400, 429])(
+  it.each([400, 429, 500])(
     "rejects when fetch responds with HTTP %i",
     async (status) => {
       const fetchMock = vi
